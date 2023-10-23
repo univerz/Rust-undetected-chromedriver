@@ -1,10 +1,11 @@
 #[cfg(test)]
 mod tests {
+    use test_log::test;
     use thirtyfour::prelude::ElementQueryable;
     use thirtyfour::By;
     use undetected_chromedriver::chrome;
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_headless_detection() {
         let driver = chrome().await.unwrap();
         driver

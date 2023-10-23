@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use test_log::test;
     use thirtyfour::prelude::{ElementQueryable, ElementWaitable};
     use thirtyfour::By;
     use undetected_chromedriver::chrome;
@@ -36,7 +37,7 @@ mod tests {
         score
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn recaptcha() {
         let driver = chrome().await.unwrap();
         let score = get_score(&driver).await;

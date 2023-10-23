@@ -8,6 +8,7 @@ license = "MIT"
 readme = "README.md"
 
 [dependencies]
+anyhow = "1.0.75"
 log = "0.4.20"
 rand = "0.8.5"
 reqwest = {version="0.11.18", features=["json"]}
@@ -17,3 +18,7 @@ thirtyfour = "0.31.0"
 thiserror = "1.0.50"
 tokio = { version="1.28.2", features=["fs", "process"] }
 zip = "0.6.6"
+
+[dev-dependencies]
+env_logger = "0.10.0"
+test-log = "0.2.13"
