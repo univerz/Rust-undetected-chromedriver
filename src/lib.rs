@@ -31,12 +31,19 @@ pub struct Driver {
 /// ensures we're not leaking chromedriver processes and occupying ports.
 pub struct UndetectedChrome {
     pub driver: Arc<Driver>,
-    pub webdriver: WebDriver,
+    pub chrome: WebDriver,
+}
+
+impl UndetectedChrome {
+    pub async fn quit(self) -> anyhow::Result<()> {
+        self.chrome.quit().await?;
+        Ok(())
+    }
 }
 
 impl DerefMut for UndetectedChrome {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.webdriver
+        &mut self.chrome
     }
 }
 
@@ -44,7 +51,7 @@ impl Deref for UndetectedChrome {
     type Target = WebDriver;
 
     fn deref(&self) -> &Self::Target {
-        &self.webdriver
+        &self.chrome
     }
 }
 
@@ -72,7 +79,7 @@ impl ChromeBuilder {
         self
     }
 
-    pub async fn build(self) -> anyhow::Result<WebDriver> {
+    pub async fn build(self) -> anyhow::Result<UndetectedChrome> {
         let mut caps = self.caps.unwrap_or_else(|| DesiredCapabilities::chrome());
         let driver = match self.driver {
             Some(d) => d,
@@ -94,8 +101,8 @@ impl ChromeBuilder {
                 anyhow::bail!("could not connect to chromedriver");
             }
             match WebDriver::new(&driver.url, caps.clone()).await {
-                Ok(d) => {
-                    return Ok(d);
+                Ok(chrome) => {
+                    return Ok(UndetectedChrome { driver, chrome });
                 }
                 Err(_) => tokio::time::sleep(std::time::Duration::from_millis(250)).await,
             }
@@ -110,7 +117,7 @@ fn random_char() -> u8 {
 }
 
 /// Launches a new Chromedriver instance and returns a WebDriver running on it.
-pub async fn chrome() -> anyhow::Result<WebDriver> {
+pub async fn chrome() -> anyhow::Result<UndetectedChrome> {
     ChromeBuilder::new().build().await
 }
 
