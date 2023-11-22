@@ -83,7 +83,9 @@ impl ChromeBuilder {
         let mut caps = self.caps.unwrap_or_else(|| DesiredCapabilities::chrome());
         let driver = match self.driver {
             Some(d) => d,
-            None => Arc::new(start_driver().await?),
+            None => anyhow::bail!(
+                "build function can't start driver due to weird interaction with async spawning"
+            ),
         };
 
         caps.set_no_sandbox().unwrap();
