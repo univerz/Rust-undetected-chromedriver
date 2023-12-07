@@ -113,13 +113,17 @@ pub async fn fetch_chromedriver(client: &reqwest::Client, os: OS) -> anyhow::Res
 
     let resp = client.get(&chromedriver_url).send().await?;
     let body = resp.bytes().await?;
+    unzip_chromedriver(body.to_vec())?;
+    Ok(())
+}
 
+fn unzip_chromedriver(body: Vec<u8>) -> anyhow::Result<()> {
     let mut archive = zip::ZipArchive::new(std::io::Cursor::new(body))?;
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
         let outpath = file.mangled_name();
         if file.name().ends_with('/') {
-            tokio::fs::create_dir_all(&outpath).await?;
+            std::fs::create_dir_all(&outpath)?;
         } else {
             let outpath_relative = outpath.file_name().ok_or_else(|| {
                 anyhow!(
