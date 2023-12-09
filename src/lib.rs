@@ -97,19 +97,8 @@ impl ChromeBuilder {
         caps.add_chrome_arg("disable-infobars").unwrap();
         caps.add_chrome_option("excludeSwitches", ["enable-automation"])
             .unwrap();
-        let mut attempt = 0;
-        loop {
-            if attempt >= 20 {
-                anyhow::bail!("could not connect to chromedriver");
-            }
-            match WebDriver::new(&driver.url, caps.clone()).await {
-                Ok(chrome) => {
-                    return Ok(UndetectedChrome { driver, chrome });
-                }
-                Err(_) => tokio::time::sleep(std::time::Duration::from_millis(250)).await,
-            }
-            attempt += 1;
-        }
+        let chrome = WebDriver::new(&driver.url, caps.clone()).await?;
+        Ok(UndetectedChrome { driver, chrome })
     }
 }
 
