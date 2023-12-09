@@ -83,9 +83,7 @@ impl ChromeBuilder {
         let mut caps = self.caps.unwrap_or_else(|| DesiredCapabilities::chrome());
         let driver = match self.driver {
             Some(d) => d,
-            None => anyhow::bail!(
-                "build function can't start driver due to weird interaction with async spawning"
-            ),
+            None => Arc::new(start_driver().await?),
         };
 
         caps.set_no_sandbox().unwrap();
@@ -97,6 +95,23 @@ impl ChromeBuilder {
         caps.add_chrome_arg("disable-infobars").unwrap();
         caps.add_chrome_option("excludeSwitches", ["enable-automation"])
             .unwrap();
+        let mut attempts = 0;
+        let client = reqwest::Client::new();
+        loop {
+            attempts += 1;
+            if client
+                .get(&format!("{}/status", driver.url))
+                .send()
+                .await
+                .is_ok()
+            {
+                break;
+            }
+            if attempts > 20 {
+                anyhow::bail!("failed to connect to chromedriver");
+            }
+            tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+        }
         let chrome = WebDriver::new(&driver.url, caps.clone()).await?;
         Ok(UndetectedChrome { driver, chrome })
     }
