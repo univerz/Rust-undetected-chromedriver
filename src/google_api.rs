@@ -74,16 +74,16 @@ pub async fn fetch_chromedriver(client: &reqwest::Client, os: OS) -> anyhow::Res
         // Fetch the chromedriver binary
         chromedriver_url = match os {
             OS::Linux => format!(
-                "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{}/{}/{}",
-                version, "linux64", "chromedriver-linux64.zip"
+                "https://storage.googleapis.com/chrome-for-testing-public/{}/linux64/chromedriver-linux64.zip",
+                version
             ),
             OS::MacOS => format!(
-                "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{}/{}/{}",
-                version, "mac-x64", "chromedriver-mac-x64.zip"
+                "https://storage.googleapis.com/chrome-for-testing-public/{}/mac-arm64/chromedriver-mac-arm64.zip",
+                version
             ),
             OS::Windows => format!(
-                "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{}/{}/{}",
-                version, "win64", "chromedriver-win64.zip"
+                "https://storage.googleapis.com/chrome-for-testing-public/{}/win64/chrome-win64.zip",
+                version,
             ),
         };
     } else {
@@ -112,6 +112,7 @@ pub async fn fetch_chromedriver(client: &reqwest::Client, os: OS) -> anyhow::Res
     }
 
     let resp = client.get(&chromedriver_url).send().await?;
+    resp.error_for_status_ref()?;
     let body = resp.bytes().await?;
     unzip_chromedriver(body.to_vec())?;
     Ok(())
