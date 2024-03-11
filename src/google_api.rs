@@ -22,7 +22,7 @@ pub async fn get_chrome_version(os: OS) -> anyhow::Result<String> {
     log::info!("Getting installed Chrome version...");
     let command = match os {
         OS::Linux => {
-            Command::new("google-chrome")
+            Command::new("google-chrome-stable")
                 .arg("--version")
                 .output()
                 .await?
